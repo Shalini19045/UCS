@@ -14,12 +14,16 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.iiitd.ucsf.R
-import com.iiitd.ucsf.models.Audio
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.iiitd.ucsf.R
+import com.iiitd.ucsf.models.Audio
+import com.iiitd.ucsf.utilities.Utilities
 import kotlinx.android.synthetic.main.activity_audio_details.*
-
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class AudioDetails : AppCompatActivity() {
     var mMediaPlayer: MediaPlayer? = null
@@ -35,7 +39,8 @@ class AudioDetails : AppCompatActivity() {
     var audioname:String=""
     var audio_desc:String=""
     var init_count: Int=0
-
+    //var list_timestamp = arrayListOf<String>()
+    var list_timestamp: ArrayList<String> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audio_details)
@@ -50,7 +55,10 @@ class AudioDetails : AppCompatActivity() {
         tvIdAudioName.text = audio.name + "\n" + audio.description
           audioname=audio.name;
         audio_desc=audio.description
+ if(Utilities.getListOftimestamps(applicationContext,audioname)!=null)
+        list_timestamp= Utilities.getListOftimestamps( applicationContext,audioname)
 
+        Log.v("timestamps",list_timestamp.toString())
     // Seek bar change listener
         seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
@@ -77,16 +85,16 @@ class AudioDetails : AppCompatActivity() {
 
 
 
-            Toast.makeText(this,"media playing",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "media playing", Toast.LENGTH_SHORT).show()
         }else{
             mediaPlayer = MediaPlayer()
 
             val path = Environment.getExternalStorageDirectory().getPath()+"/All_Audios/"+audioname+"$"+audio_desc+".mp3";
 
-         Log.v("path",path)
-            val audio_val: Uri = Uri.parse( path)
+         Log.v("path", path)
+            val audio_val: Uri = Uri.parse(path)
 
-            mediaPlayer.setDataSource(applicationContext,audio_val);
+            mediaPlayer.setDataSource(applicationContext, audio_val);
 /*
 if(audioname.equals("water"))
          mediaPlayer = MediaPlayer.create(applicationContext,R.raw.water)
@@ -100,7 +108,7 @@ if(audioname.equals("water"))
 */
            mediaPlayer.prepare()
             mediaPlayer.start()
-            Toast.makeText(this,"media playing",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "media playing", Toast.LENGTH_SHORT).show()
 
         }
         initializeSeekBar()
@@ -112,7 +120,7 @@ if(audioname.equals("water"))
             playButton.isEnabled = true
             pauseButton.isEnabled = false
             stopBtn.isEnabled = false
-            Toast.makeText(this,"end",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "end", Toast.LENGTH_SHORT).show()
             count_play++;
             init_count++
         }
@@ -125,7 +133,7 @@ if(audioname.equals("water"))
             playButton.isEnabled = true
             pauseButton.isEnabled = false
             stopBtn.isEnabled = true
-            Toast.makeText(this,"media pause",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "media pause", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -143,12 +151,26 @@ if(audioname.equals("water"))
             pauseButton.isEnabled = false
             stopBtn.isEnabled = false
             lastduration=tv_pass.text.toString()
+
+
+            try{
+            list_timestamp=Utilities.getListOftimestamps(applicationContext,audioname)}
+
+            catch (e:Exception){}
+            Log.v("list",list_timestamp.toString())
+
+            val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
+
+            list_timestamp.add(date+"_"+lastduration)
+
+            Utilities.saveListOftimestamps(audioname,list_timestamp,applicationContext)
             if(!tv_due.text.toString().equals("0"))
             {   count_play++
                 init_count++}
             tv_pass.text = ""
             tv_due.text = ""
-            Toast.makeText(this,"media stop",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "media stop", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -166,38 +188,59 @@ if(audioname.equals("water"))
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
 
+
+
+        val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
         if(keyCode==KeyEvent.KEYCODE_BACK){
 
           val bzkMap = HashMap<String, String>()
          //   bzkMap.put("name", audioname)
 
-            var outputMap: HashMap<String, String>
-            outputMap =getHashMap( "mymap")
+            var outputMap: HashMap<String,String>
+            outputMap =getHashMap("mymap")
 
+            val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
+
+           /* Storing a map
+
+            outerMap.put("key", innerMap);*/
             var count_val=0
 
-               if(outputMap.isEmpty()){
-                   outputMap.put(audioname+"_duration",lastduration)
-                   outputMap.put(audioname+"_count","0")
-
-               }
 
             try{
    count_val = Integer.parseInt(outputMap.get(audioname + "_count")) + count_play;}
-            catch (e:Exception){
-                Log.v("expc",e.message)
-                outputMap.put(audioname+"_duration",lastduration)
-                outputMap.put(audioname+"_count",init_count.toString())
+            catch (e: Exception){
+                Log.v("expc", e.message)
+                outputMap.put(audioname + "_duration", lastduration)
+                outputMap.put(audioname + "_count", init_count.toString())
+                //outputMap.put(audioname + "_time_duration", date + "_" + lastduration)
 
                 count_val=init_count
+
+                outputMap.put(audioname + "_time_duration", list_timestamp.toString());
+
             }
 
 
-    outputMap.replace(audioname+"_duration",lastduration)
+    outputMap.replace(audioname + "_duration", lastduration)
     outputMap.replace(audioname + "_count", count_val.toString())
+            outputMap.replace(audioname + "_time_duration", list_timestamp.toString())
 
-Log.v("duration",tv_pass.text.toString()+"..........................."+lastduration)
-            saveHashMap( "mymap",outputMap)
+Log.v("duration", tv_pass.text.toString() + "..........................." + lastduration)
+
+/*
+
+            Map<String, Map<String, Value>> outerMap = new HashMap<String, HashMap<String, Value>>();
+            Map<String, Value> innerMap = new HashMap<String, Value>();
+            innerMap.put("innerKey", new Value());
+            Storing a map
+
+            outerMap.put("key", innerMap);
+*/
+
+            saveHashMap("mymap", outputMap)
 
             Toast.makeText(applicationContext, "Saved Locally!", Toast.LENGTH_SHORT).show()
 
@@ -212,8 +255,22 @@ Log.v("duration",tv_pass.text.toString()+"..........................."+lastdurat
         }
         return super.onKeyDown(keyCode, event)
     }
-
-
+    fun savetimestampMap(key: String?, obj: HashMap<String, String>) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val editor = prefs.edit()
+        val gson = Gson()
+        val json: String = gson.toJson(obj)
+        editor.putString(key, json)
+        editor.apply() // This line is IMPORTANT !!!
+    }
+    fun gettimestampHashMap(key: String?): HashMap<String, String> {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val gson = Gson()
+        val json = prefs.getString(key, "")
+        val type =
+            object : TypeToken<HashMap<String?, String?>?>() {}.type
+        return gson.fromJson(json, type)
+    }
     fun saveHashMap(key: String?, obj: HashMap<String, String>) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val editor = prefs.edit()

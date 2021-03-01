@@ -6,12 +6,15 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
+ import com.iiitd.ucsf.pojo.User;
 
 public class ucsf extends Application {
     private static ucsf instance;
     private static FirebaseFirestore db;
      private FirebaseAnalytics mFirebaseAnalytics;
+    private static User user;
 
+    private static String userID;
 
     synchronized public static ucsf  getInstance() {
         if (instance == null) {
@@ -33,6 +36,14 @@ public class ucsf extends Application {
         return db;
     }
 
+    synchronized public User getAppUser(User p) {
+        if (p != null) {
+            user = p;
+            db.collection("users").document(p.getId()).set(p);
+        } else if (user == null)
+            user = new User();
+        return user;
+    }
 
 
     @Override
@@ -54,6 +65,16 @@ public class ucsf extends Application {
             return mFirebaseAnalytics;
         }
     }
+    public void setUserID(String id) {
+        userID = id;
+    }
 
+    public void clearUserId(){
+        userID = null;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
 
 }

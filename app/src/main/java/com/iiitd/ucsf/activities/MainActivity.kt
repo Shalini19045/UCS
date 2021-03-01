@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.*
@@ -38,22 +39,29 @@ import com.iiitd.ucsf.manager.DownloadManager
 import com.iiitd.ucsf.models.Audio
 import com.iiitd.ucsf.models.Data
 import com.iiitd.ucsf.threads.LongThread
+import com.iiitd.ucsf.utilities.Constants
 import com.iiitd.ucsf.utilities.Utilities
 import org.json.JSONException
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import java.io.*
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
     private val sharedPrefFile = "kotlinsharedpreference"
     val MyPREFERENCES = "MyPrefs"
-    private val URL = "https://api.npoint.io/f3923cefb4a31792918c"
 
+    //private val URL = "https://api.npoint.io/f3923cefb4a31792918c"
+//https://api.npoint.io/d53010aac7794af7420c
+    private val URL ="https://api.npoint.io/d53010aac7794af7420c"
     //    var  currentVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
     var is_downloaded: Int = 0
     lateinit var recyclerView: RecyclerView
@@ -104,6 +112,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
     var versionRelease = Build.VERSION.RELEASE
     lateinit var  secureId  :String
     var dialog: ProgressDialog? = null
+    var cts = Constants()
 
     override fun onItemClick(audio: Audio) {
         var intent = Intent(this, AudioDetails::class.java)
@@ -115,6 +124,30 @@ class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         DownloadManager.setContext(this)
+        val pm: PackageManager =  getPackageManager()
+
+        try {
+            val packageInfo: PackageInfo =   pm.getPackageInfo(
+                packageName,
+                PackageManager.GET_PERMISSIONS
+            )
+
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+
+            val installTime: String = dateFormat.format(Date(packageInfo.firstInstallTime))
+            Log.d("TAG", "Installed: $installTime")
+
+
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+
+        // Current date;
+
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        Log.d("TAG", "current date: $date")
+
+
         //        }
         if (Utilities.isInternetOn(applicationContext)) {
             internetOnFlag = true
@@ -245,6 +278,8 @@ class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
         Log.v("myyyyyyyyy", arrayList_audio_names.get(0))
         Log.v("data", outputMap.get(arrayList_audio_names.get(0) + "_count").toString())
         Log.v("data", outputMap.get(arrayList_audio_names.get(0) + "_duration").toString())
+        Log.v("data", outputMap.get(arrayList_audio_names.get(0) + "_time_duration").toString())
+
         val dataObj = Data(model + "_" + secureId, "" + (version), versionRelease, outputMap)
 
 
@@ -270,6 +305,7 @@ Log.v("data",outputMap.get("water"+"_duration").toString()+"__"+outputMap.get("w
 
             bzkMap.put(arrayList_audio_names.get(i) + "_duration", "0")
             bzkMap.put(arrayList_audio_names.get(i) + "_count", "0")
+            bzkMap.put(arrayList_audio_names.get(i) + "_time_duration", "0")
         }
 /*
 
@@ -292,8 +328,12 @@ Log.v("data",outputMap.get("water"+"_duration").toString()+"__"+outputMap.get("w
             var val1= arrayList_audio_names.get(i)+"_duration"
             var val2=arrayList_audio_names.get(i)+"_count"
 
+            var val3=arrayList_audio_names.get(i)+"_time_duration"
+
             var value1=outputMap.get(val1).toString()
             var value2=outputMap.get(val2).toString()
+
+            var value3=outputMap.get(val3).toString()
 
             if ( ( value1.equals("null"))) {
                  value1="0"
@@ -301,12 +341,16 @@ Log.v("data",outputMap.get("water"+"_duration").toString()+"__"+outputMap.get("w
             if  ( value2.equals("null")) {
                 value2="0"
             }
+            if(value2.equals("null")){
+                value3="0"
+            }
             audio[i]= Audio(
                 arrayList_audio_names.get(i),
                 R.drawable.audio,
                 arrayList_audio_desc.get(i),
                 value1,
-                value2
+                value2,
+                value3
             )
           }
       //  var data : List<Audio> = List()
@@ -600,8 +644,12 @@ var data = audio.asList()
         if (!folder.exists()) {
             folder.mkdirs()
         }
+          val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+          Utilities.savecountOfdata(arrayList_audios_link.size, this)
 
-        val NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors()
+          prefs.edit().putLong("AUDIO_COUNT", arrayList_audios_link.size.toLong()).apply();
+
+          val NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors()
           Log.v("size", arrayList_audios_link.size.toString())
 if(arrayList_audios_link.size>0){
         val executor = ThreadPoolExecutor(
@@ -613,6 +661,7 @@ if(arrayList_audios_link.size>0){
         )
 
         progressDialog.setTitle("Downloading Audios")
+       progressDialog.setCancelable(false)
         progressDialog.setMessage("Application is downloading, please wait")
         for (i in 0 until arrayList_audios_link.size) {
 
@@ -855,8 +904,13 @@ if(arrayList_audios_link.size>0){
         override fun onResponse(string: String?) {
 
 
+            progressDialog.setTitle("Downloading Audios")
+            progressDialog.setMessage("Application is downloading, please wait")
+            if (!progressDialog.isShowing)
+                progressDialog.show()
             parseJsonData(string)
             Thread.sleep(2000)
+
             download_files()
         }
 
@@ -867,15 +921,16 @@ if(arrayList_audios_link.size>0){
                 val audioArray = `object`.getJSONArray("audios")
                 val al = ArrayList<Any>()
 
-
-
+                //  KEY_DATA_LIST=audioArray.length().toString()
 
                 for (i in 0 until audioArray.length()) {
                     val jsonChildNode: JSONObject = audioArray.getJSONObject(i)
                     val audio_name = jsonChildNode.getString("name")
                     val audio_url = jsonChildNode.getString("url")
                     val audio_desc = jsonChildNode.getString("description")
-                    Log.v("audios", audio_name + "\n" + audio_url + "\n" + audio_desc)
+                    val week_id = jsonChildNode.getString("week_id")
+
+                    Log.v("audios", audio_name + "\n" + audio_url + "\n" + audio_desc+"\n"+week_id)
                     Log.v("audios", audio_name + "\n" + audio_url + "\n" + audio_desc)
 
                     /*if(arrayList_audios_link.size<=audioArray.length()) {
@@ -894,8 +949,8 @@ if(arrayList_audios_link.size>0){
                     }
                     else*/
 
-                        arrayList_audios_link.add(audio_url)
-                        arrayList_audio_names_name.add(audio_name + "$" + audio_desc)
+                    arrayList_audios_link.add(audio_url)
+                    arrayList_audio_names_name.add(audio_name + "$" + audio_desc)
                     Log.v("audios", arrayList_audios_link.toString())
 
                     /*  for (current_val  in arrayList_audios_link) {
@@ -909,7 +964,10 @@ if(arrayList_audios_link.size>0){
                           arrayList_audio_names_name.remove(audio_name + "$" + audio_desc)
                       }}*/
                 }
-                Log.v("size", arrayList_audios_link.size.toString()+"____"+arrayList_audios_link.toString())
+                Log.v(
+                    "size",
+                    arrayList_audios_link.size.toString() + "____" + arrayList_audios_link.toString()
+                )
 
             } catch (e: JSONException) {
                 e.printStackTrace()

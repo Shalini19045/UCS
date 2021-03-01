@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.iiitd.ucsf.R;
@@ -18,7 +19,8 @@ import com.iiitd.ucsf.application.ucsf;
 
 public class Utilities {
 
-public static void saveDataToList(Data saveddata,Context c){
+    private static Context appcontext;
+ public static void saveDataToList(Data saveddata,Context c){
         ArrayList<Data> dataArrayList;
         dataArrayList = getListOfdata(c);
         if(dataArrayList == null)
@@ -48,6 +50,26 @@ public static void saveDataToList(Data saveddata,Context c){
         editor.putString(Constants.KEY_DATA_LIST, json);
         editor.commit();
     }
+
+    public static void savecountOfdata(int count,Context c){
+        SharedPreferences shref;
+        SharedPreferences.Editor editor;
+        shref = PreferenceManager.getDefaultSharedPreferences(c);
+
+           appcontext=c;
+        editor = shref.edit();
+        editor.remove(Constants.KEY_COUNT_LABEL).commit();
+        editor.putInt(Constants.KEY_COUNT_LABEL , count);
+        editor.commit();
+    }
+
+    public static int getcountOfdata(){
+        SharedPreferences shref;
+        SharedPreferences.Editor editor;
+        shref = PreferenceManager.getDefaultSharedPreferences(appcontext);
+          return shref.getInt(Constants.KEY_COUNT_LABEL, 0);
+
+     }
     public static final boolean isInternetOn(Context context) {
 
         // get Connectivity Manager object to check connection
@@ -73,5 +95,28 @@ public static void saveDataToList(Data saveddata,Context c){
         }
         return false;
     }
+    public static void saveListOftimestamps(String audioname,ArrayList<String> dataArrayList,Context c){
+        SharedPreferences shref;
+        SharedPreferences.Editor editor;
+        shref = PreferenceManager.getDefaultSharedPreferences(c);
+
+        Gson gson = new Gson();
+        String json = gson.toJson(dataArrayList);
+
+        editor = shref.edit();
+       // editor.remove(Constants.KEY_TIMESTAMPS).commit();
+        editor.putString(audioname+"_"+Constants.KEY_TIMESTAMPS, json);
+        editor.commit();
+    }
+
+    public static ArrayList<String> getListOftimestamps(Context c,String audioname){
+
+        SharedPreferences shref = PreferenceManager.getDefaultSharedPreferences(c);
+        Gson gson = new Gson();
+        String response=shref.getString(audioname+"_"+Constants.KEY_TIMESTAMPS , "");
+        ArrayList<String> dataArrayList = gson.fromJson(response, new TypeToken<ArrayList<String>>(){}.getType());
+        return dataArrayList;
+    }
+
 
 }

@@ -5,10 +5,16 @@ import android.graphics.BitmapFactory
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.preference.PreferenceManager
 import android.util.Log
+import android.widget.ArrayAdapter
+import com.bumptech.glide.load.engine.bitmap_recycle.IntegerArrayAdapter
 import com.iiitd.ucsf.manager.DownloadManager
+import com.iiitd.ucsf.utilities.Constants
+import com.iiitd.ucsf.utilities.Utilities
 import java.io.File
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 
 class LongThread : Runnable {
@@ -16,6 +22,7 @@ class LongThread : Runnable {
     var handler: Handler? = null
     lateinit var fileUrl: String
     lateinit var filename : String
+    var cts=Constants()
       constructor() {}
     constructor(  threadNo: Int, fileUrl: String?, handler: Handler?,fileName: String?) {
         this.threadNo = threadNo
@@ -41,8 +48,12 @@ class LongThread : Runnable {
         }
        // DownloadManager.initDownload( this,fileUrl, folder.absolutePath, filename)
         DownloadManager.initDownload( fileUrl, folder.absolutePath, filename)
+        //Thread.sleep(cts.COUNT_OF_DATA.toLong()*10000)
+      val value_count = Utilities.getcountOfdata()*1*10000.toLong()
+        Log.v("vallll",value_count .toString())
 
-        Thread.sleep(60000)
+        Thread.sleep(value_count)
+
         Log.i(TAG, "stopping Thread : $threadNo")
         sendMessage(threadNo, "Thread Completed")
 /*

@@ -10,5 +10,12 @@
 
     <string name="refresh">Refresh</string>
     <string name="disabled">Currently Disabled</string>
+    <string name="hint_login">Enter email ID</string>
+    <string name="hint_login_pwd">Enter Password</string>
+    <string name="hint_login_pwd_confirm">Confirm Password</string>
+
+    <string name="register">REGISTER</string>
+    <string name="submit">Submit</string>
+    <string name="login">Login</string>
 
 </resources>
