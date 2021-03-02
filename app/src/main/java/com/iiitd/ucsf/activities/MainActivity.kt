@@ -119,7 +119,7 @@ private val URL ="https://api.npoint.io/cfb4309535d5a852d3a4"
     override fun onItemClick(audio: Audio) {
         var intent = Intent(this, AudioDetails::class.java)
         intent.putExtra(getString(R.string.audioKey), audio)
-         startActivity(intent)
+         startActivityForResult(intent,10)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -581,6 +581,8 @@ var data = audio.asList()
 
         adapter?.notifyDataSetChanged()
         recyclerView.adapter = adapter
+
+
     }
     override fun onRequestPermissionsResult(
             requestCode: Int,
@@ -1065,6 +1067,14 @@ if(arrayList_audios_link.size>0){
 
     val rQueue: RequestQueue = Volley.newRequestQueue(this)
     rQueue.add(request)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode==10){
+            finish();
+            startActivity(getIntent());
+        }
     }
     }
 

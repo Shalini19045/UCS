@@ -224,8 +224,8 @@ if(audioname.equals("water"))
             }
 
 
-    outputMap.replace(audioname + "_duration", lastduration)
-    outputMap.replace(audioname + "_count", count_val.toString())
+            outputMap.replace(audioname + "_duration", lastduration)
+            outputMap.replace(audioname + "_count", count_val.toString())
             outputMap.replace(audioname + "_time_duration", list_timestamp.toString())
 
 Log.v("duration", tv_pass.text.toString() + "..........................." + lastduration)
