@@ -53,15 +53,17 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.properties.Delegates
 
 
 class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
     private val sharedPrefFile = "kotlinsharedpreference"
     val MyPREFERENCES = "MyPrefs"
 
-    //private val URL = "https://api.npoint.io/f3923cefb4a31792918c"
-//https://api.npoint.io/d53010aac7794af7420c
-    private val URL ="https://api.npoint.io/d53010aac7794af7420c"
+
+//https://api.npoint.io/cfb4309535d5a852d3a4
+    //private val URL ="https://api.npoint.io/d53010aac7794af7420c"
+private val URL ="https://api.npoint.io/cfb4309535d5a852d3a4"
     //    var  currentVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
     var is_downloaded: Int = 0
     lateinit var recyclerView: RecyclerView
@@ -113,7 +115,7 @@ class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
     lateinit var  secureId  :String
     var dialog: ProgressDialog? = null
     var cts = Constants()
-
+   var current_week :Long=0
     override fun onItemClick(audio: Audio) {
         var intent = Intent(this, AudioDetails::class.java)
         intent.putExtra(getString(R.string.audioKey), audio)
@@ -128,8 +130,8 @@ class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
 
         try {
             val packageInfo: PackageInfo =   pm.getPackageInfo(
-                packageName,
-                PackageManager.GET_PERMISSIONS
+                    packageName,
+                    PackageManager.GET_PERMISSIONS
             )
 
             val dateFormat = SimpleDateFormat("yyyy-MM-dd")
@@ -144,10 +146,10 @@ class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
 
         // Current date;
 
-        val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+      /*  val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         Log.d("TAG", "current date: $date")
-
-
+*/
+        getcurrentweek();
         //        }
         if (Utilities.isInternetOn(applicationContext)) {
             internetOnFlag = true
@@ -209,8 +211,8 @@ class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
         if (currentVersionCode == savedVersionCode) {
 
             Log.v(
-                "swati",
-                "11111111111111111111" + currentVersionCode + "__________" + savedVersionCode
+                    "swati",
+                    "11111111111111111111" + currentVersionCode + "__________" + savedVersionCode
             )
 
             get_stored_audio_files()
@@ -265,8 +267,8 @@ class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
         }
 
         Log.v(
-            "final",
-            arrayList_audios.toString() + "\\\\\\\\\\" + arrayList_audio_names.toString() + "\n" + arrayList_audio_desc.toString()
+                "final",
+                arrayList_audios.toString() + "\\\\\\\\\\" + arrayList_audio_names.toString() + "\n" + arrayList_audio_desc.toString()
         )
 
 
@@ -345,12 +347,12 @@ Log.v("data",outputMap.get("water"+"_duration").toString()+"__"+outputMap.get("w
                 value3="0"
             }
             audio[i]= Audio(
-                arrayList_audio_names.get(i),
-                R.drawable.audio,
-                arrayList_audio_desc.get(i),
-                value1,
-                value2,
-                value3
+                    arrayList_audio_names.get(i),
+                    R.drawable.audio,
+                    arrayList_audio_desc.get(i),
+                    value1,
+                    value2,
+                    value3
             )
           }
       //  var data : List<Audio> = List()
@@ -453,8 +455,8 @@ var data = audio.asList()
             val versionCode = BuildConfig.VERSION_CODE.toString()
             val versionName = BuildConfig.VERSION_NAME
             Log.d(
-                "update",
-                "Current version " + versionName + "playstore version " + onlineVersion
+                    "update",
+                    "Current version " + versionName + "playstore version " + onlineVersion
             )
             if (onlineVersion != null && !onlineVersion.isEmpty()) {
                 if (java.lang.Float.valueOf(versionName) < java.lang.Float.valueOf(onlineVersion)) {
@@ -462,26 +464,26 @@ var data = audio.asList()
                     val builder = AlertDialog.Builder(mainActivity?.applicationContext)
                     builder.setTitle("App Update Alert")
                     builder.setMessage(
-                        mainActivity?.getString(R.string.youAreNotUpdatedMessage)
-                            .toString() + " " + mainActivity?.currentVersionCode + mainActivity?.getString(
-                            R.string.youAreNotUpdatedMessage1
-                        )
+                            mainActivity?.getString(R.string.youAreNotUpdatedMessage)
+                                    .toString() + " " + mainActivity?.currentVersionCode + mainActivity?.getString(
+                                    R.string.youAreNotUpdatedMessage1
+                            )
                     )
 //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 
                     builder.setPositiveButton(android.R.string.yes) { dialog, which ->
                         mainActivity?.startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("market://details?id=" + mainActivity?.getPackageName())
-                            )
+                                Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("market://details?id=" + mainActivity?.getPackageName())
+                                )
                         )
                     }
 
                     builder.setNegativeButton(android.R.string.no) { dialog, which ->
                         Toast.makeText(
-                            mainActivity?.applicationContext,
-                            android.R.string.no, Toast.LENGTH_SHORT
+                                mainActivity?.applicationContext,
+                                android.R.string.no, Toast.LENGTH_SHORT
                         ).show()
                     }
 
@@ -500,8 +502,8 @@ var data = audio.asList()
         var newVersion: String? = null
         return try {
             newVersion = Jsoup.connect(
-                "https://play.google.com/store/apps/details?id=" + activityReference.get()?.PACKAGE_NAME.toString()
-                    .toString() + "&hl=it"
+                    "https://play.google.com/store/apps/details?id=" + activityReference.get()?.PACKAGE_NAME.toString()
+                            .toString() + "&hl=it"
             )
                 .timeout(30000)
                 .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
@@ -520,49 +522,49 @@ var data = audio.asList()
     private fun checkStoragePermissions(activity: Activity) {
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ContextCompat.checkSelfPermission(
-                    activity,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED) {
+                            activity,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) != PackageManager.PERMISSION_GRANTED) {
                 // Should we show an explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(
-                        activity,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    )) {
+                                activity,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )) {
                     ActivityCompat.requestPermissions(
-                        activity,
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        REQUEST_CODE_WRITE_STORAGE_PERMISION
+                            activity,
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            REQUEST_CODE_WRITE_STORAGE_PERMISION
                     )
                 } else {
                     // No explanation needed, we can request the permission.
                     ActivityCompat.requestPermissions(
-                        activity,
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        REQUEST_CODE_WRITE_STORAGE_PERMISION
+                            activity,
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            REQUEST_CODE_WRITE_STORAGE_PERMISION
                     )
                 }
             }
         } else {
             if (ContextCompat.checkSelfPermission(
-                    activity,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED) {
-
-                if (ContextCompat.checkSelfPermission(
-                        activity,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    ) != PackageManager.PERMISSION_GRANTED) {
-                    // Should we show an explanation?
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(
                             activity,
                             Manifest.permission.WRITE_EXTERNAL_STORAGE
-                        )) {
+                    ) != PackageManager.PERMISSION_GRANTED) {
+
+                if (ContextCompat.checkSelfPermission(
+                                activity,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        ) != PackageManager.PERMISSION_GRANTED) {
+                    // Should we show an explanation?
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(
+                                    activity,
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                            )) {
                     } else {
                         // No explanation needed, we can request the permission.
                         ActivityCompat.requestPermissions(
-                            activity,
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                            REQUEST_CODE_WRITE_STORAGE_PERMISION
+                                activity,
+                                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                                REQUEST_CODE_WRITE_STORAGE_PERMISION
                         )
                     }
                 }
@@ -581,16 +583,16 @@ var data = audio.asList()
         recyclerView.adapter = adapter
     }
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             REQUEST_CODE_WRITE_STORAGE_PERMISION -> {
                 if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     val folder = File(
-                        Environment.getExternalStorageDirectory().toString() + "/" + "All_Audios"
+                            Environment.getExternalStorageDirectory().toString() + "/" + "All_Audios"
                     )
                     if (!folder.exists()) {
                         folder.mkdirs()
@@ -653,11 +655,11 @@ var data = audio.asList()
           Log.v("size", arrayList_audios_link.size.toString())
 if(arrayList_audios_link.size>0){
         val executor = ThreadPoolExecutor(
-            NUMBER_OF_CORES * arrayList_audios_link.size,
-            NUMBER_OF_CORES * arrayList_audios_link.size,
-            120L,
-            TimeUnit.SECONDS,
-            LinkedBlockingQueue<Runnable>()
+                NUMBER_OF_CORES * arrayList_audios_link.size,
+                NUMBER_OF_CORES * arrayList_audios_link.size,
+                120L,
+                TimeUnit.SECONDS,
+                LinkedBlockingQueue<Runnable>()
         )
 
         progressDialog.setTitle("Downloading Audios")
@@ -670,11 +672,11 @@ if(arrayList_audios_link.size>0){
 
 
             executor.execute(
-                LongThread(
-                    i, arrayList_audios_link.get(i), Handler(this), arrayList_audio_names_name.get(
-                        i
+                    LongThread(
+                            i, arrayList_audios_link.get(i), Handler(this), arrayList_audio_names_name.get(
+                            i
                     ) + ".mp3"
-                )
+                    )
             )
            // DownloadManager.initDownload( arrayList_audios.get(i), folder.absolutePath, arrayList_audio_names.get(i)+".mp3")
 
@@ -723,24 +725,24 @@ if(arrayList_audios_link.size>0){
         val builder = AlertDialog.Builder(this)
         builder.setTitle("App Update Alert")
         builder.setMessage(
-            this.getString(R.string.youAreNotUpdatedMessage)
-                .toString() + " " + currentVersionCode + this.getString(R.string.youAreNotUpdatedMessage1)
+                this.getString(R.string.youAreNotUpdatedMessage)
+                        .toString() + " " + currentVersionCode + this.getString(R.string.youAreNotUpdatedMessage1)
         )
 //builder.setPositiveButton("OK", DialogInterface.OnClickListener(function = x))
 
         builder.setPositiveButton(android.R.string.yes) { dialog, which ->
             startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("market://details?id=" + applicationContext.getPackageName())
-                )
+                    Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("market://details?id=" + applicationContext.getPackageName())
+                    )
             )
         }
 
         builder.setNegativeButton(android.R.string.no) { dialog, which ->
             Toast.makeText(
-                applicationContext,
-                android.R.string.no, Toast.LENGTH_SHORT
+                    applicationContext,
+                    android.R.string.no, Toast.LENGTH_SHORT
             ).show()
         }
 
@@ -748,22 +750,95 @@ if(arrayList_audios_link.size>0){
         builder.show()
     }
 
+    fun  getcurrentweek(){
+        val pm: PackageManager =  getPackageManager()
+
+        val week=0;
+        try {
+            val packageInfo: PackageInfo =   pm.getPackageInfo(
+                    packageName,
+                    PackageManager.GET_PERMISSIONS
+            )
+
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+
+            val installTime: String = dateFormat.format(Date(packageInfo.firstInstallTime))
+            Log.d("TAG", "Installed: $installTime" + "------------" + Date(packageInfo.firstInstallTime).toString())
+            val cal = Calendar.getInstance()
+
+
+             val installTime_split= (installTime.split("-") )
+
+           /* val year=Integer.parseInt(installTime[0].toString());
+            val month=Integer.parseInt(installTime[1].toString());
+            val day=Integer.parseInt(installTime[2].toString());
+*/
+            val year=Integer.parseInt(installTime_split[0]);
+            val month=Integer.parseInt(installTime_split[1]);
+            val day=Integer.parseInt(installTime_split[2]);
+            Log.d("TAG", "day:$day")
+
+            //   cal.set(year, month, day)
+            cal.set(Calendar.YEAR, (year));
+            cal.set(Calendar.MONTH, (month - 1));
+            cal.set(Calendar.DAY_OF_MONTH, (day));
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+
+            Log.d("TAG", "cal: ${cal.time}")
+
+            //  c.time = Date(packageInfo.firstInstallTime)
+            val weekOfYear = cal[Calendar.WEEK_OF_YEAR]
+            Log.d("TAG", "current week: $weekOfYear")
+
+
+            val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            Log.d("TAG", "current date: $date")
+
+            val date_start: Date = dateFormat.parse(installTime)
+            val date_end: Date = dateFormat.parse(date)
+            Log.d("TAG", "two dates:start end: $date_start$date_end")
+            val diffInMillies: Long = Math.abs(date_end.getTime() - date_start.getTime())
+            val diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS)
+            val weeks: Long = diff / 7
+
+            val current_week_now=weeks+1
+            Log.d("TAG", "weeks: $current_week_now")
+
+            current_week=current_week_now
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+
+        // Current date;
+
+       /* val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        Log.d("TAG", "current date: $date")
+
+
+      */
+
+
+
+    }
    fun updatedataToFireBase(meds: java.util.ArrayList<Data>) {
         if (internetOnFlag) {
             Log.d("firebase", "Internet present")
             for (m in meds) {
                 val documentReference: DocumentReference = db.collection(
-                    "data"
+                        "data"
                 ).document(m.id.toString())
                 documentReference.set(m).addOnFailureListener {
                     Log.d(
-                        "firebase",
-                        "failure in adding " + m.id
+                            "firebase",
+                            "failure in adding " + m.id
                     )
                 }.addOnSuccessListener {
                     Log.d(
-                        "firebase",
-                        "sucessss in adding main activity" + m.id
+                            "firebase",
+                            "sucessss in adding main activity" + m.id
                     )
                 }
             }
@@ -930,7 +1005,8 @@ if(arrayList_audios_link.size>0){
                     val audio_desc = jsonChildNode.getString("description")
                     val week_id = jsonChildNode.getString("week_id")
 
-                    Log.v("audios", audio_name + "\n" + audio_url + "\n" + audio_desc+"\n"+week_id)
+                    Log.v("currentweek:___________",current_week.toString()+"______"+week_id)
+                    Log.v("audios", audio_name + "\n" + audio_url + "\n" + audio_desc + "\n" + week_id)
                     Log.v("audios", audio_name + "\n" + audio_url + "\n" + audio_desc)
 
                     /*if(arrayList_audios_link.size<=audioArray.length()) {
@@ -949,8 +1025,11 @@ if(arrayList_audios_link.size>0){
                     }
                     else*/
 
-                    arrayList_audios_link.add(audio_url)
-                    arrayList_audio_names_name.add(audio_name + "$" + audio_desc)
+                    if(week_id.toString().trim().equals(current_week.toString().trim()))
+                    {
+                        Log.v("curreneek:___________",current_week.toString())
+                        arrayList_audios_link.add(audio_url)
+                    arrayList_audio_names_name.add(audio_name + "$" + audio_desc)}
                     Log.v("audios", arrayList_audios_link.toString())
 
                     /*  for (current_val  in arrayList_audios_link) {
@@ -965,8 +1044,8 @@ if(arrayList_audios_link.size>0){
                       }}*/
                 }
                 Log.v(
-                    "size",
-                    arrayList_audios_link.size.toString() + "____" + arrayList_audios_link.toString()
+                        "size",
+                        arrayList_audios_link.size.toString() + "____" + arrayList_audios_link.toString()
                 )
 
             } catch (e: JSONException) {
