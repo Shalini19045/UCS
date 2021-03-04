@@ -9,5 +9,6 @@ public class Constants {
     public static final String KEY_TIMESTAMPS = "timeList";
 
 
+    public static final String KEY_GROUP_ID = "groupid";
 
  }

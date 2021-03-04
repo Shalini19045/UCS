@@ -3,7 +3,9 @@ package com.iiitd.ucsf.activities
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.app.ProgressDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -14,6 +16,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +31,7 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.iiitd.ucsf.BuildConfig
@@ -53,7 +57,6 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.properties.Delegates
 
 
 class MainActivity : AppCompatActivity(), OnItemClickListener,Handler.Callback {
@@ -119,13 +122,22 @@ private val URL ="https://api.npoint.io/cfb4309535d5a852d3a4"
     override fun onItemClick(audio: Audio) {
         var intent = Intent(this, AudioDetails::class.java)
         intent.putExtra(getString(R.string.audioKey), audio)
-         startActivityForResult(intent,10)
+         startActivityForResult(intent, 10)
     }
-
+   /*private val FCM_API = "https://fcm.googleapis.com/fcm/send"
+    private val serverKey =
+            "key=" + "AAAAs780TRc:APA91bHI1f9u5lJx3IF_R2Y405U9Pv2CxbsGnBkFkkR5Qi-9oM1RSaOSVl7u6zVOHvzAZdbXGRYaHBM0jPb-mf9vRRkpoxuQi4zra5HXql3fYbT6yEEf9XdYHGuQnJfqXjuUlGBPsgML"
+    private val contentType = "application/json"
+    private val requestQueue: RequestQueue by lazy {
+        Volley.newRequestQueue(this.applicationContext)
+    }*/
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         DownloadManager.setContext(this)
+
+        FirebaseMessaging.getInstance().subscribeToTopic("/topics/Enter_topic")
+
         val pm: PackageManager =  getPackageManager()
 
         try {
@@ -221,8 +233,8 @@ private val URL ="https://api.npoint.io/cfb4309535d5a852d3a4"
         else
             if (savedVersionCode == DOESNT_EXIST) {
                 Log.v("swati", "2222222222222222222")
+                input_user_id()
 
-                checkStoragePermissions(this)
 
             // TODO This is a new install (or the user cleared the shared preferences)
 
@@ -575,6 +587,45 @@ var data = audio.asList()
         }
     }
 
+    private fun input_user_id( ){
+        val alert = AlertDialog.Builder(this)
+        var dialog: Dialog? = null
+        val edittext = EditText(this)
+        alert.setMessage("Enter Your Group Id")
+        alert.setTitle("Group ID")
+        alert.setCancelable(false)
+        alert.setView(edittext)
+
+        alert.setPositiveButton("OK", DialogInterface.OnClickListener { dialog, whichButton -> //What ever you want to do with the value
+            //  val YouEditTextValue = edittext.text
+            //OR
+            // val YouEditTextValue = edittext.text.toString()
+            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+            if (edittext.text.length > 0) {
+                prefs.edit().putString(Constants.KEY_GROUP_ID, edittext.text.toString()).apply();
+                checkStoragePermissions(this)
+                dialog.cancel()
+
+            } else {
+                Toast.makeText(this, "Enter a group id!", Toast.LENGTH_LONG).show()
+            }
+
+
+        })
+
+        alert.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, whichButton ->
+            // what ever you want to do with No option.
+            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+            prefs.edit().putString(Constants.KEY_GROUP_ID, "0").apply();
+            checkStoragePermissions(this)
+            dialog.cancel()
+        })
+        val alertdialog: AlertDialog = alert.create()
+        dialog = alertdialog
+        dialog.show()
+    }
     override fun onResume() {
         super.onResume()
 
@@ -1007,7 +1058,7 @@ if(arrayList_audios_link.size>0){
                     val audio_desc = jsonChildNode.getString("description")
                     val week_id = jsonChildNode.getString("week_id")
 
-                    Log.v("currentweek:___________",current_week.toString()+"______"+week_id)
+                    Log.v("currentweek:___________", current_week.toString() + "______" + week_id)
                     Log.v("audios", audio_name + "\n" + audio_url + "\n" + audio_desc + "\n" + week_id)
                     Log.v("audios", audio_name + "\n" + audio_url + "\n" + audio_desc)
 
@@ -1027,11 +1078,11 @@ if(arrayList_audios_link.size>0){
                     }
                     else*/
 
-                    if(week_id.toString().trim().equals(current_week.toString().trim()))
-                    {
-                        Log.v("curreneek:___________",current_week.toString())
+                    if (week_id.toString().trim().equals(current_week.toString().trim())) {
+                        Log.v("curreneek:___________", current_week.toString())
                         arrayList_audios_link.add(audio_url)
-                    arrayList_audio_names_name.add(audio_name + "$" + audio_desc)}
+                        arrayList_audio_names_name.add(audio_name + "$" + audio_desc)
+                    }
                     Log.v("audios", arrayList_audios_link.toString())
 
                     /*  for (current_val  in arrayList_audios_link) {
@@ -1064,6 +1115,7 @@ if(arrayList_audios_link.size>0){
 
         }
     })
+
 
     val rQueue: RequestQueue = Volley.newRequestQueue(this)
     rQueue.add(request)

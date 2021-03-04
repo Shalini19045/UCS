@@ -35,11 +35,20 @@
             </intent-filter>
         </activity>
         <service android:name="com.iiitd.ucsf.service.DownloadService"/>
-        <service
+       <!-- <service
             android:name=".activities.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>-->
+
+        <service
+            android:name=".service.MyFirebaseMessagingService"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
     </application>
