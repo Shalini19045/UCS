@@ -49,7 +49,7 @@ class LongThread : Runnable {
        // DownloadManager.initDownload( this,fileUrl, folder.absolutePath, filename)
         DownloadManager.initDownload( fileUrl, folder.absolutePath, filename)
         //Thread.sleep(cts.COUNT_OF_DATA.toLong()*10000)
-      val value_count = Utilities.getcountOfdata()*1*10000.toLong()
+      val value_count = Utilities.getcountOfdata()*2*10000.toLong()
         Log.v("vallll",value_count .toString())
 
         Thread.sleep(value_count)

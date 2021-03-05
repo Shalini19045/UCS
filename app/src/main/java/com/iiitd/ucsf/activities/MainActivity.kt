@@ -92,6 +92,8 @@ private val URL ="https://api.npoint.io/cfb4309535d5a852d3a4"
     lateinit var refresh: Button
 
     val PREF_VERSION_CODE_KEY = "version_code"
+    val PREF_WEEK_KEY = "current week"
+
     val DOESNT_EXIST = -1
     var  savedVersionCode: Int = 0
     var curCount = 0
@@ -119,6 +121,8 @@ private val URL ="https://api.npoint.io/cfb4309535d5a852d3a4"
     var dialog: ProgressDialog? = null
     var cts = Constants()
    var current_week :Long=0
+
+    var check_for_week_update=false
     override fun onItemClick(audio: Audio) {
         var intent = Intent(this, AudioDetails::class.java)
         intent.putExtra(getString(R.string.audioKey), audio)
@@ -228,7 +232,10 @@ private val URL ="https://api.npoint.io/cfb4309535d5a852d3a4"
             )
 
             get_stored_audio_files()
+            if(check_for_week_update){
+                download_data_from_service()
 
+            }
         }
         else
             if (savedVersionCode == DOESNT_EXIST) {
@@ -843,8 +850,8 @@ if(arrayList_audios_link.size>0){
             Log.d("TAG", "cal: ${cal.time}")
 
             //  c.time = Date(packageInfo.firstInstallTime)
-            val weekOfYear = cal[Calendar.WEEK_OF_YEAR]
-            Log.d("TAG", "current week: $weekOfYear")
+         //   val weekOfYear = cal[Calendar.WEEK_OF_YEAR]
+          //  Log.d("TAG", "current week: $weekOfYear")
 
 
             val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
@@ -861,6 +868,20 @@ if(arrayList_audios_link.size>0){
             Log.d("TAG", "weeks: $current_week_now")
 
             current_week=current_week_now
+
+            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+
+            val lastweek:Long
+            lastweek = prefs.getLong(PREF_WEEK_KEY, 1)
+
+
+            if(lastweek<current_week){
+
+                check_for_week_update=true;
+            }
+            // Update the shared preferences with the current version code
+            prefs.edit().putLong(PREF_WEEK_KEY, current_week).apply();
+
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         }
@@ -1036,6 +1057,8 @@ if(arrayList_audios_link.size>0){
             progressDialog.setMessage("Application is downloading, please wait")
             if (!progressDialog.isShowing)
                 progressDialog.show()
+            Toast.makeText(applicationContext,"Please Wait",Toast.LENGTH_LONG).show();
+
             parseJsonData(string)
             Thread.sleep(2000)
 
